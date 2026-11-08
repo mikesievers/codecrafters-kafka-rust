@@ -1,35 +1,13 @@
 [![progress-banner](https://backend.codecrafters.io/progress/kafka/09d795b7-6392-4dc5-8ab9-127d2b879111)](https://app.codecrafters.io/users/mikesievers?r=2qF)
 
-This is a starting point for Rust solutions to the
+This is a Rust implementaiton of the Codecrafters
 ["Build Your Own Kafka" Challenge](https://codecrafters.io/challenges/kafka).
 
-In this challenge, you'll build a toy Kafka clone that's capable of accepting
-and responding to ApiVersions & Fetch API requests. You'll also learn about
-encoding and decoding messages using the Kafka wire protocol. You'll also learn
-about handling the network protocol, event loops, TCP sockets and more.
+Topics:
 
-**Note**: If you're viewing this repo on GitHub, head over to
-[codecrafters.io](https://codecrafters.io) to try the challenge.
+- Build a toy Kafka clone
+  - That accepts ApiVersions + Fetch API requests
+- Encoding and decoding messages using the Kafka wire protocol
+- Handle the network protocol, event loops, TCP sockets etc.
 
-# Passing the first stage
-
-The entry point for your Kafka implementation is in `src/main.rs`. Study and
-uncomment the relevant code, and then run the command below to execute the tests
-on our servers:
-
-```sh
-codecrafters submit
-```
-
-That's all!
-
-# Stage 2 & beyond
-
-Note: This section is for stages 2 and beyond.
-
-1. Ensure you have `cargo (1.96)` installed locally
-1. Run `./your_program.sh` to run your Kafka broker, which is implemented in
-   `src/main.rs`. This command compiles your Rust project, so it might be slow
-   the first time you run it. Subsequent runs will be fast.
-1. Run `codecrafters submit` to submit your solution to CodeCrafters. Test
-   output will be streamed to your terminal.
+For other challenges look at the excellent Codecrafters website: [codecrafters.io](https://codecrafters.io) to try the challenge.
