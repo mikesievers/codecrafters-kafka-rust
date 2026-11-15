@@ -11,3 +11,7 @@ Topics:
 - Handle the network protocol, event loops, TCP sockets etc.
 
 For other challenges look at the excellent Codecrafters website: [codecrafters.io](https://codecrafters.io) to try the challenge.
+
+Next steps:
+
+- use nom to parse the protocol
