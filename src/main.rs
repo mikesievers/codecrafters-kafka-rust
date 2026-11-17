@@ -2,6 +2,7 @@
 #![allow(clippy::never_loop)]
 
 mod kafka_codec;
+mod kafka_error;
 mod kafka_request;
 mod kafka_response;
 mod request_parser;
@@ -13,6 +14,7 @@ use tokio_util::codec::{FramedRead, FramedWrite, LengthDelimitedCodec};
 
 use crate::{
     kafka_codec::KafkaCodec,
+    kafka_error::KafkaErrorCode,
     kafka_response::{ApiVersionsResponse, KafkaResponse},
     request_parser::parse_kafka_frame,
 };
@@ -76,9 +78,10 @@ async fn handle_stream(mut stream: TcpStream) -> Result<()> {
         };
 
         let error_code: i16 = match kafka_request.request_api_version {
-            0..=4 => 0,
-            _ => 35,
-        };
+            0..=4 => KafkaErrorCode::NoError,
+            _ => KafkaErrorCode::UnsupportedVersion,
+        }
+        .into();
         let reponse = KafkaResponse::ApiVersions(ApiVersionsResponse {
             correlation_id: kafka_request.correlation_id,
             error_code,
