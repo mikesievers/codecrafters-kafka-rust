@@ -82,6 +82,10 @@ async fn handle_stream(mut stream: TcpStream) -> Result<()> {
             _ => KafkaErrorCode::UnsupportedVersion,
         }
         .into();
+        let error_code: i16 = match kafka_request.request_api_version {
+            0..=4 => 0,
+            _ => 35,
+        };
         let reponse = KafkaResponse::ApiVersions(ApiVersionsResponse {
             correlation_id: kafka_request.correlation_id,
             error_code,
