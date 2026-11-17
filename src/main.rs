@@ -1,17 +1,21 @@
-#![allow(unused_imports)]
+// Remove later when it is clear whether the stream should loop or not
+#![allow(clippy::never_loop)]
+
+mod kafka_codec;
+mod kafka_request;
+mod kafka_response;
+mod request_parser;
+
 use anyhow::Result;
-use bytes::{BufMut, BytesMut};
 use futures_util::{SinkExt, StreamExt};
-use nom::{
-    IResult,
-    number::complete::{be_i16, be_i32},
-};
-use tokio::{
-    io::AsyncBufReadExt,
-    io::AsyncReadExt,
-    net::{TcpListener, TcpStream},
-};
+use tokio::net::{TcpListener, TcpStream};
 use tokio_util::codec::{FramedRead, FramedWrite, LengthDelimitedCodec};
+
+use crate::{
+    kafka_codec::KafkaCodec,
+    kafka_response::{ApiVersionsResponse, KafkaResponse},
+    request_parser::parse_kafka_frame,
+};
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -47,7 +51,7 @@ async fn handle_stream(mut stream: TcpStream) -> Result<()> {
     // In future, we will want to have framed reads.
     // For now ignore the input and return a result
     let mut reader = FramedRead::new(raw_reader, frame_codec.clone());
-    let mut writer = FramedWrite::new(raw_writer, frame_codec);
+    let mut writer = FramedWrite::new(raw_writer, KafkaCodec {});
 
     while let Some(result) = reader.next().await {
         let kafka_request = match result {
@@ -71,37 +75,19 @@ async fn handle_stream(mut stream: TcpStream) -> Result<()> {
             }
         };
 
-        let mut payload = BytesMut::with_capacity(4);
-        // Hardcoded correlation ID 7
-        payload.put_i32(kafka_request.correlation_id);
+        let error_code: i16 = match kafka_request.request_api_version {
+            0..=4 => 0,
+            _ => 35,
+        };
+        let reponse = KafkaResponse::ApiVersions(ApiVersionsResponse {
+            correlation_id: kafka_request.correlation_id,
+            error_code,
+        });
 
-        writer.send(payload.freeze()).await?;
+        writer.send(reponse).await?;
 
         // For now, immediately break out of the loop
         break;
     }
     Ok(())
-}
-
-#[derive(Debug)]
-struct KafkaRequest {
-    request_api_key: i16,
-    request_api_version: i16,
-    correlation_id: i32,
-    // client_id: Option<String>,
-}
-
-fn parse_kafka_frame(input: &[u8]) -> IResult<&[u8], KafkaRequest> {
-    let (input, request_api_key) = be_i16(input)?;
-    let (input, request_api_version) = be_i16(input)?;
-    let (input, correlation_id) = be_i32(input)?;
-
-    Ok((
-        input,
-        KafkaRequest {
-            request_api_key,
-            request_api_version,
-            correlation_id,
-        },
-    ))
 }
